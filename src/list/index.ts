@@ -8,6 +8,7 @@ import {
   expandSelectedItems
 } from './helpers/listVisibilityStateHelper'
 import { appendIconToElement } from '../svgIcons'
+import * as async from 'async'
 
 const validateOptions = (flatOptions: FlattedOptionType[]) => {
   const { duplications } = flatOptions.reduce(
@@ -42,7 +43,7 @@ const updateListValue = (
   isFirstValueUpdate: boolean,
   isIndependentNodes: boolean,
   rtl: boolean,
-  optionsNodes: {[key: string]: HTMLInputElement}
+  optionsNodes: Map<ValueOptionType, HTMLInputElement>
 ) => {
   updateOptionsByValue(newValue, flattedOptions, isSingleSelect, isIndependentNodes)
 
@@ -59,10 +60,10 @@ const updateDOM = (
   iconElements: IconsType,
   previousSingleSelectedValue: ValueOptionType[],
   rtl: boolean,
-  optionsNodes: {[key: string]: HTMLInputElement}
+  optionsNodes: Map<ValueOptionType, HTMLInputElement>
 ) => {
-  flattedOptions.forEach((option) => {
-    const input = optionsNodes[option.id];
+  async.each(flattedOptions, (option: FlattedOptionType) => {
+    const input = optionsNodes.get(option.id) as HTMLInputElement;
     const listItem = getListItemByCheckbox(input)
 
     input.checked = option.checked
@@ -75,6 +76,8 @@ const updateDOM = (
 
     updateLeftPaddingItems(option, listItem, flattedOptions, rtl)
     updateCheckboxClass(option, input, iconElements)
+  }, (err) => {
+    console.error(err)
   })
 
   updateEmptyListClass(flattedOptions, srcElement)
@@ -249,7 +252,7 @@ export class TreeselectList implements ITreeselectList {
   searchText: string
   flattedOptions: FlattedOptionType[]
   flattedOptionsBeforeSearch: FlattedOptionType[]
-  optionsNodes: {[key: string]: HTMLInputElement}
+  optionsNodes: Map<ValueOptionType, HTMLInputElement>
   selectedNodes: SelectedNodesType
   srcElement: HTMLElement
 
@@ -301,11 +304,12 @@ export class TreeselectList implements ITreeselectList {
     this.flattedOptionsBeforeSearch = this.flattedOptions
     this.selectedNodes = { nodes: [], groupedNodes: [], allNodes: [] }
     this.srcElement = this.#createSrcElement()
-    this.optionsNodes = {}
-    this.flattedOptions.forEach((option) => {
-      this.optionsNodes[option.id] = this.srcElement.querySelector(`[input-id="${option.id}"]`) as HTMLInputElement
-    })
-
+    this.optionsNodes = new Map<ValueOptionType, HTMLInputElement>();
+    for (let i = 0; i < this.flattedOptions.length; i++) {
+      const option = this.flattedOptions[i];
+      this.optionsNodes.set(option.id, this.srcElement.querySelector(`[input-id="${option.id}"]`) as HTMLInputElement)
+    }
+    
     this.inputCallback = inputCallback
     this.arrowClickCallback = arrowClickCallback
     this.mouseupCallback = mouseupCallback

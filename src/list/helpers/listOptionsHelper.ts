@@ -1,6 +1,8 @@
 import { OptionType, ValueOptionType, FlattedOptionType } from '../../treeselectTypes'
 import { updateOptionByCheckState } from './listCheckStateHelper'
 
+const disabledOptions = [] as ValueOptionType[];
+
 export const getFlattedOptions = (options: OptionType[], openLevel: number, isIndependentNodes: boolean) => {
   const defaultParams = { level: 0, groupId: '' }
   const flattedOptions = getInitFlattedOptions(options, openLevel, defaultParams.groupId, defaultParams.level)
@@ -27,6 +29,10 @@ const getInitFlattedOptions = (options: OptionType[], openLevel: number, groupId
       hidden,
       disabled: curr.disabled ?? false
     })
+
+    if (curr.disabled) {
+      disabledOptions.push(curr.value);
+    }
 
     if (isGroup) {
       const children = getInitFlattedOptions(curr.children, openLevel, curr.value, level + 1)
@@ -72,8 +78,7 @@ export const getCheckedOptions = (flattedOptions: FlattedOptionType[]) => {
 
 const getAdjustedFlattenOptionsUpdate = (flattedOptions: FlattedOptionType[], isIndependentNodes: boolean) => {
   // Disabled update
-  const disabledNodes = flattedOptions.filter((option) => !!option.disabled)
-  disabledNodes.forEach(({ id }) =>
+  disabledOptions.forEach(( id ) =>
     updateOptionByCheckState({ id, checked: false }, flattedOptions, isIndependentNodes)
   )
   // TODO etc updates

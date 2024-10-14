@@ -26,7 +26,7 @@
     "build": "tsc && vite build && node postBuild.js",
     "preview": "vite preview",
     "prettier": "prettier --w src && prettier --w app && prettier --w demo"
-  },  
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/dipson88/treeselectjs.git"
@@ -47,6 +47,7 @@
   },
   "homepage": "https://github.com/dipson88/treeselectjs#readme",
   "devDependencies": {
+    "@types/async": "^3.2.24",
     "prettier": "^2.8.7",
     "typescript": "^4.9.3",
     "vite": "^4.5.2",
@@ -54,5 +55,8 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "dependencies": {
+    "async": "^3.2.6"
+  }
 }
